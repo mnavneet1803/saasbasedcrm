@@ -1,0 +1,244 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Sidebar consistency fixes */
+.sidebar-nav-link {
+  min-height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.sidebar-nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.sidebar-nav-link.active {
+  background-color: #0d6efd !important;
+  color: white !important;
+}
+
+.sidebar-icon {
+  flex-shrink: 0 !important;
+  margin-right: 8px !important;
+}
+
+.sidebar-text {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  flex: 1 !important;
+}
+
+/* Action buttons styling */
+.action-btn {
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  transition: all 0.2s ease !important;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.action-btn i {
+  font-size: 12px !important;
+}
+
+/* Color-specific hover effects */
+.action-btn.btn-outline-primary:hover {
+  background-color: #0d6efd !important;
+  border-color: #0d6efd !important;
+  color: white !important;
+}
+
+.action-btn.btn-outline-info:hover {
+  background-color: #0dcaf0 !important;
+  border-color: #0dcaf0 !important;
+  color: white !important;
+}
+
+.action-btn.btn-outline-warning:hover {
+  background-color: #ffc107 !important;
+  border-color: #ffc107 !important;
+  color: black !important;
+}
+
+.action-btn.btn-outline-danger:hover {
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
+  color: white !important;
+}
+
+.action-btn.btn-outline-success:hover {
+  background-color: #198754 !important;
+  border-color: #198754 !important;
+  color: white !important;
+}
+
+.table td {
+  vertical-align: middle !important;
+  padding: 12px 8px !important;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.075) !important;
+}
+
+/* Custom styles for the CRM application */
+
+/* Sidebar styles */
+.sidebar-nav-link {
+  transition: all 0.3s ease;
+}
+
+.sidebar-nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  text-decoration: none;
+}
+
+.sidebar-nav-link.active {
+  background-color: #0d6efd !important;
+  color: white !important;
+}
+
+.sidebar-icon {
+  margin-right: 10px;
+  font-size: 16px;
+}
+
+.sidebar-text {
+  font-size: 14px;
+}
+
+/* Action button styles */
+.action-btn {
+  padding: 4px 8px;
+  margin: 0 2px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  transform: scale(1.05);
+}
+
+.action-btn.edit {
+  background-color: #ffc107;
+  color: #000;
+}
+
+.action-btn.view {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.action-btn.reset {
+  background-color: #6f42c1;
+  color: white;
+}
+
+.action-btn.toggle {
+  background-color: #28a745;
+  color: white;
+}
+
+.action-btn.delete {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* Chat styles */
+.conversation-item:hover {
+  background-color: #f8f9fa !important;
+}
+
+.conversation-item {
+  transition: background-color 0.2s ease;
+}
+
+.messages-area {
+  background-color: #f8f9fa;
+}
+
+.message-bubble {
+  margin-bottom: 10px;
+}
+
+.message-text {
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.message-time {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.conversations-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.conversations-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.conversations-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.conversations-list::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.messages-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages-area::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.messages-area::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.messages-area::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Responsive chat layout */
+@media (max-width: 768px) {
+  .conversation-item {
+    padding: 10px !important;
+  }
+  
+  .message-bubble .d-inline-block {
+    max-width: 85% !important;
+  }
+}
