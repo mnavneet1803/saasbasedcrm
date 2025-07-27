@@ -13,6 +13,7 @@ import {
   Badge,
   InputGroup
 } from 'react-bootstrap';
+import { getApi, postApi } from '../utils/api';
 
 const ManagePaymentGateways = () => {
   const [gateways, setGateways] = useState([]);
@@ -34,16 +35,11 @@ const ManagePaymentGateways = () => {
   const fetchGateways = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/payment-gateways', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
-      if (response.ok) {
-        setGateways(data);
+      const response = await getApi('/api/payment-gateways');
+      if (response) {
+        setGateways(response);
       } else {
-        setError(data.message);
+        setError(response.message);
       }
     } catch (err) {
       setError('Failed to fetch payment gateways');
@@ -56,22 +52,15 @@ const ManagePaymentGateways = () => {
     e.preventDefault();
     try {
       const url = editingGateway 
-        ? `http://localhost:5000/api/payment-gateways/${editingGateway._id}`
-        : 'http://localhost:5000/api/payment-gateways';
+        ? `/api/payment-gateways/${editingGateway._id}`
+        : '/api/payment-gateways';
       
       const method = editingGateway ? 'PUT' : 'POST';
       
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      });
+      const response = await postApi(url, formData);
       
-      const data = await response.json();
-      if (response.ok) {
+      const data = response.data;
+      if (response.success) {
         setShowModal(false);
         setEditingGateway(null);
         setFormData({ name: '', enabled: false, config: {} });
@@ -96,17 +85,12 @@ const ManagePaymentGateways = () => {
 
   const handleToggle = async (gatewayId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/payment-gateways/${gatewayId}/toggle`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await postApi(`/api/payment-gateways/${gatewayId}/toggle`, {});
       
-      if (response.ok) {
+      if (response.success) {
         fetchGateways();
       } else {
-        const data = await response.json();
+        const data = response.data;
         setError(data.message);
       }
     } catch (err) {
@@ -120,17 +104,12 @@ const ManagePaymentGateways = () => {
     }
     
     try {
-      const response = await fetch(`http://localhost:5000/api/payment-gateways/${gatewayId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await postApi(`/payment-gateways/${gatewayId}`, { _method: 'DELETE' });
       
-      if (response.ok) {
+      if (response.success) {
         fetchGateways();
       } else {
-        const data = await response.json();
+        const data = response.data;
         setError(data.message);
       }
     } catch (err) {

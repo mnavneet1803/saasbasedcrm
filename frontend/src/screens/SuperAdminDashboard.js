@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, Card, Button, Badge, Table, ProgressBar, Container } from "react-bootstrap";
+import { getApi } from '../utils/api';
+import { useNavigate } from 'react-router-dom';
 
 const SuperAdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -24,47 +26,25 @@ const SuperAdminDashboard = () => {
   const [recentPayments, setRecentPayments] = useState([]);
   const [recentAdmins, setRecentAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchDashboardData();
   }, []);
 
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-
   const fetchDashboardData = async () => {
     try {
       // Fetch stats
-      const statsRes = await fetch(`${apiUrl}/api/dashboard/stats`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (statsRes.ok) {
-        const statsData = await statsRes.json();
-        setStats(statsData);
-      }
+      const statsData = await getApi('/api/dashboard/stats');
+      setStats(statsData);
 
       // Fetch recent payments
-      const paymentsRes = await fetch(`${apiUrl}/api/payments/transactions?limit=5`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (paymentsRes.ok) {
-        const paymentsData = await paymentsRes.json();
-        setRecentPayments(paymentsData.transactions || []);
-      }
+      const paymentsData = await getApi('/api/payments/transactions?limit=5');
+      setRecentPayments(paymentsData.transactions || []);
 
       // Fetch recent admins
-      const adminsRes = await fetch(`${apiUrl}/api/users?role=admin&limit=5`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (adminsRes.ok) {
-        const adminsData = await adminsRes.json();
-        setRecentAdmins(adminsData.users || []);
-      }
+      const adminsData = await getApi('/api/users?role=admin&limit=5');
+      setRecentAdmins(adminsData.users || []);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -151,7 +131,7 @@ const SuperAdminDashboard = () => {
           <StatCard
             title="Monthly Revenue"
             value={loading ? "Loading..." : `₹${(stats.monthlyRevenue || 0).toLocaleString()}`}
-            icon="📈"
+            icon="💰"
             color="primary"
             subtitle="This month"
             trend={8}
@@ -275,7 +255,7 @@ const SuperAdminDashboard = () => {
                     </div>
                   ))}
                   <div className="text-center mt-3">
-                    <Button variant="outline-primary" size="sm">
+                    <Button variant="outline-primary" size="sm" onClick={() => navigate('/superadmin/payments')}>
                       View All Payments
                     </Button>
                   </div>
@@ -312,7 +292,7 @@ const SuperAdminDashboard = () => {
                     </div>
                   ))}
                   <div className="text-center mt-3">
-                    <Button variant="outline-warning" size="sm">
+                    <Button variant="outline-warning" size="sm" onClick={() => navigate('/superadmin/admins')}>
                       View All Admins
                     </Button>
                   </div>
@@ -441,7 +421,7 @@ const SuperAdminDashboard = () => {
             <Card.Body>
               <Row>
                 <Col md={3} className="mb-3">
-                  <Button variant="outline-primary" className="w-100 h-100 py-4">
+                  <Button variant="outline-primary" className="w-100 h-100 py-4" onClick={() => navigate('/superadmin/admins')}>
                     <div className="text-center">
                       <div className="mb-2" style={{ fontSize: '2rem' }}>➕</div>
                       <strong>Add New Admin</strong>
@@ -451,7 +431,7 @@ const SuperAdminDashboard = () => {
                   </Button>
                 </Col>
                 <Col md={3} className="mb-3">
-                  <Button variant="outline-success" className="w-100 h-100 py-4">
+                  <Button variant="outline-success" className="w-100 h-100 py-4" onClick={() => navigate('/superadmin/plans')}>
                     <div className="text-center">
                       <div className="mb-2" style={{ fontSize: '2rem' }}>📦</div>
                       <strong>Manage Plans</strong>
@@ -461,7 +441,7 @@ const SuperAdminDashboard = () => {
                   </Button>
                 </Col>
                 <Col md={3} className="mb-3">
-                  <Button variant="outline-warning" className="w-100 h-100 py-4">
+                  <Button variant="outline-warning" className="w-100 h-100 py-4" onClick={() => navigate('/superadmin/payment-gateways')}>
                     <div className="text-center">
                       <div className="mb-2" style={{ fontSize: '2rem' }}>💳</div>
                       <strong>Payment Gateways</strong>
@@ -471,7 +451,7 @@ const SuperAdminDashboard = () => {
                   </Button>
                 </Col>
                 <Col md={3} className="mb-3">
-                  <Button variant="outline-info" className="w-100 h-100 py-4">
+                  <Button variant="outline-info" className="w-100 h-100 py-4" onClick={() => navigate('/superadmin/payments')}>
                     <div className="text-center">
                       <div className="mb-2" style={{ fontSize: '2rem' }}>📊</div>
                       <strong>Generate Reports</strong>

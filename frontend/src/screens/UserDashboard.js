@@ -3,6 +3,7 @@ import { Card, Button, Spinner, Alert, Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import { getToken } from '../utils/auth';
+import { getApi } from '../utils/api';
 
 const UserDashboard = () => {
   const { user } = useAuth();
@@ -17,11 +18,11 @@ const UserDashboard = () => {
       setError('');
       try {
         const token = getToken();
-        const res = await fetch('http://localhost:5000/api/users/profile', {
+        const res = await getApi('/api/users/profile', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (res.ok) {
-          const data = await res.json();
+        if (res) {
+          const data = await res;
           setProfile(data);
         } else {
           setError('Failed to fetch profile');

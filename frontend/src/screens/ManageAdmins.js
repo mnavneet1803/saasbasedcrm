@@ -3,6 +3,7 @@ import {
   Row, Col, Card, Button, Table, Modal, Form, Alert,
   Badge, Spinner, InputGroup
 } from "react-bootstrap";
+import { getApi, postApi } from '../utils/api';
 
 const STATUS_OPTIONS = [
   { value: "active", label: "Active" },
@@ -37,19 +38,10 @@ const ManageAdmins = () => {
     // eslint-disable-next-line
   }, []);
 
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-
   const fetchPlans = async () => {
     try {
-      const response = await fetch(`${apiUrl}/api/plans`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setPlans(data);
-      }
+      const data = await getApi('/api/plans');
+      setPlans(data);
     } catch (error) {
       console.error('Error fetching plans:', error);
     }
@@ -60,17 +52,8 @@ const ManageAdmins = () => {
     setError("");
     try {
       const query = new URLSearchParams(params).toString();
-      const response = await fetch(`${apiUrl}/api/admins${query ? `?${query}` : ""}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setAdmins(data);
-      } else {
-        setError('Failed to fetch admins');
-      }
+      const data = await getApi(`/api/admins${query ? `?${query}` : ""}`);
+      setAdmins(data);
     } catch (error) {
       setError('Network error');
     } finally {
@@ -99,49 +82,36 @@ const ManageAdmins = () => {
     setSuccess("");
     try {
       const url = editingAdmin
-        ? `${apiUrl}/api/admins/${editingAdmin._id}`
-        : `${apiUrl}/api/admins`;
+        ? `/api/admins/${editingAdmin._id}`
+        : '/api/admins';
       const method = editingAdmin ? 'PUT' : 'POST';
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      });
-      if (response.ok) {
-        setSuccess(editingAdmin ? 'Admin updated successfully' : 'Admin created successfully');
-        setShowModal(false);
-        setEditingAdmin(null);
-        setFormData({ name: "", email: "", password: "", plan: "" });
-        fetchAdmins(filters);
+      const body = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        plan: formData.plan
+      };
+      let data;
+      if (method === 'PUT') {
+        data = await postApi(url, body, { method: 'PUT' });
       } else {
-        const data = await response.json();
-        setError(data.message || 'Operation failed');
+        data = await postApi(url, body);
       }
+      setSuccess(editingAdmin ? 'Admin updated successfully' : 'Admin created successfully');
+      setShowModal(false);
+      fetchAdmins();
     } catch (error) {
-      setError('Network error');
+      setError(error.message || 'Failed to save admin');
     }
   };
 
   const handleDelete = async (adminId) => {
     if (window.confirm('Are you sure you want to delete this admin?')) {
       try {
-        const response = await fetch(`${apiUrl}/api/admins/${adminId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        if (response.ok) {
-          setSuccess('Admin deleted successfully');
-          fetchAdmins(filters);
-        } else {
-          setError('Failed to delete admin');
-        }
+        await postApi(`/api/admins/${adminId}`, {}, { method: 'DELETE' });
+        fetchAdmins();
       } catch (error) {
-        setError('Network error');
+        setError('Failed to delete admin');
       }
     }
   };
@@ -166,22 +136,10 @@ const ManageAdmins = () => {
   const handleBlockUnblock = async (admin) => {
     const newStatus = admin.status === "active" ? "blocked" : "active";
     try {
-      const response = await fetch(`${apiUrl}/api/admins/${admin._id}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ status: newStatus })
-      });
-      if (response.ok) {
-        setSuccess(`Admin ${newStatus === "active" ? "unblocked" : "blocked"} successfully`);
-        fetchAdmins(filters);
-      } else {
-        setError('Failed to update status');
-      }
+      await postApi(`/api/admins/${admin._id}/status`, { status: newStatus }, { method: 'PATCH' });
+      fetchAdmins();
     } catch (error) {
-      setError('Network error');
+      setError('Failed to update status');
     }
   };
 

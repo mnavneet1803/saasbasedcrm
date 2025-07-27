@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Table, Spinner, Alert, Badge } from "react-bootstrap";
+import { getApi } from '../utils/api';
 
 const BillingHistory = () => {
   const [transactions, setTransactions] = useState([]);
@@ -14,11 +15,9 @@ const BillingHistory = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("http://localhost:5000/api/payments/history", {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      const data = await res.json();
-      if (res.ok) {
+      const res = await getApi("/api/payments/history");
+      const data = await res;
+      if (res) {
         setTransactions(data);
       } else {
         setError(data.message || "Failed to load billing history");

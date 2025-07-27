@@ -4,6 +4,7 @@ import {
   Form, InputGroup, Alert, Spinner, Modal, Pagination,
   Dropdown, DropdownButton
 } from "react-bootstrap";
+import { getApi, postApi } from '../utils/api';
 
 const Payments = () => {
   const [transactions, setTransactions] = useState([]);
@@ -59,14 +60,10 @@ const Payments = () => {
         search: searchTerm.trim()
       });
 
-      const response = await fetch(`http://localhost:5000/api/payments/transactions?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await getApi(`/api/payments/transactions?${params.toString()}`);
 
-      if (response.ok) {
-        const data = await response.json();
+      if (response) {
+        const data = await response;
         setTransactions(data.transactions);
         setTotalPages(data.totalPages);
         setTotalTransactions(data.total);
@@ -84,14 +81,10 @@ const Payments = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/payments/stats", {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await getApi('/api/payments/stats');
 
-      if (response.ok) {
-        const data = await response.json();
+      if (response) {
+        const data = await response;
         setStats(data);
       }
     } catch (err) {

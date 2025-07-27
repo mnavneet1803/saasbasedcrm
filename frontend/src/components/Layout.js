@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Navbar, Nav, Container, NavbarBrand, NavLink, Dropdown } from "react-bootstrap";
 import useAuth from "../hooks/useAuth";
+import { getApi, postApi } from '../utils/api';
 
 const Layout = ({ role, children }) => {
   const { logout } = useAuth();
@@ -46,17 +47,9 @@ const Layout = ({ role, children }) => {
 
   const checkSubscription = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/users/profile", {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (response.ok) {
-        const userData = await response.json();
-        const isSubscribed = userData.plan && userData.status === 'active';
-        setHasSubscription(isSubscribed);
-      }
+      const userData = await getApi("/api/users/profile");
+      const isSubscribed = userData.plan && userData.status === 'active';
+      setHasSubscription(isSubscribed);
     } catch (err) {
       console.error('Error checking subscription:', err);
     } finally {

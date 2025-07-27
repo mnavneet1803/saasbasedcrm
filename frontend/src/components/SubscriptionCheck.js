@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Spinner, Alert, Container } from 'react-bootstrap';
 import useAuth from '../hooks/useAuth';
+import { getApi, postApi } from '../utils/api';
 
 const SubscriptionCheck = ({ children }) => {
   const [loading, setLoading] = useState(true);
@@ -17,11 +18,7 @@ const SubscriptionCheck = ({ children }) => {
   const checkSubscription = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:5000/api/users/profile", {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await getApi('/api/users/profile');
       
       if (response.ok) {
         const userData = await response.json();

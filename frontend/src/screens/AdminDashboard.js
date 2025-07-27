@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Badge, Spinner } from "react-bootstrap";
+import { getApi } from '../utils/api';
+import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchUserProfile();
@@ -11,35 +14,25 @@ const AdminDashboard = () => {
 
   // Re-check subscription status when dashboard loads (after payment)
   useEffect(() => {
-    const checkSubscriptionStatus = () => {
-      fetch("http://localhost:5000/api/users/profile", {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      })
-      .then(res => res.json())
-      .then(userData => {
+    const checkSubscriptionStatus = async () => {
+      try {
+        const userData = await getApi('/api/users/profile');
         if (userData.plan && userData.status === 'active') {
           // Dispatch event to update Layout sidebar
           window.dispatchEvent(new CustomEvent('subscriptionUpdated', { 
             detail: { hasSubscription: true } 
           }));
         }
-      })
-      .catch(err => console.error('Error checking subscription:', err));
+      } catch (err) {}
     };
-
     checkSubscriptionStatus();
   }, []);
 
   const fetchUserProfile = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/users/profile", {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
+      const response = await getApi('/api/users/profile');
+      if (response) {
+        const data = response;
         setUserData(data);
       }
     } catch (err) {
@@ -83,7 +76,7 @@ const AdminDashboard = () => {
 
       <Row>
         <Col lg={4} md={6} className="mb-4">
-          <Card className="h-100 shadow-sm">
+          <Card className="h-100 shadow-sm dashboard-action-card" onClick={() => navigate('/admin/users')} style={{ cursor: 'pointer' }}>
             <Card.Body>
               <div className="d-flex align-items-center">
                 <div className="bg-primary bg-opacity-10 p-3 rounded me-3">
@@ -99,7 +92,7 @@ const AdminDashboard = () => {
         </Col>
 
         <Col lg={4} md={6} className="mb-4">
-          <Card className="h-100 shadow-sm">
+          <Card className="h-100 shadow-sm dashboard-action-card" onClick={() => navigate('/admin/crm')} style={{ cursor: 'pointer' }}>
             <Card.Body>
               <div className="d-flex align-items-center">
                 <div className="bg-success bg-opacity-10 p-3 rounded me-3">
@@ -115,7 +108,7 @@ const AdminDashboard = () => {
         </Col>
 
         <Col lg={4} md={6} className="mb-4">
-          <Card className="h-100 shadow-sm">
+          <Card className="h-100 shadow-sm dashboard-action-card" onClick={() => navigate('/admin/billing-history')} style={{ cursor: 'pointer' }}>
             <Card.Body>
               <div className="d-flex align-items-center">
                 <div className="bg-info bg-opacity-10 p-3 rounded me-3">

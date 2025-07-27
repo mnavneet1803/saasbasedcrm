@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Container, Row, Col, Card, Form, Button, Badge, Spinner, Alert } from 'react-bootstrap';
 import { getToken } from '../utils/auth';
 import useAuth from '../hooks/useAuth';
+import { getApi, postApi } from '../utils/api';
 
 const Chat = () => {
   const { user } = useAuth();
@@ -49,33 +50,16 @@ const Chat = () => {
   const fetchProfile = async () => {
     if (user.role !== 'user') return;
     try {
-      const token = getToken();
-      const res = await fetch('http://localhost:5000/api/users/profile', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setProfile(data);
-      }
+      const data = await getApi('/api/users/profile');
+      setProfile(data);
     } catch (err) {}
   };
 
   const fetchConversations = async () => {
     try {
       setLoading(true);
-      const token = getToken();
-      const response = await fetch('http://localhost:5000/api/chat/conversations', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setConversations(data);
-      } else {
-        setError('Failed to fetch conversations');
-      }
+      const conversations = await getApi('/api/chat/conversations');
+      setConversations(conversations);
     } catch (error) {
       setError('Network error');
     } finally {
@@ -85,23 +69,14 @@ const Chat = () => {
 
   const fetchMessages = async (otherUserId, roomId) => {
     try {
-      const token = getToken();
       let url;
       if (user.role === 'superadmin' && roomId) {
-        url = `http://localhost:5000/api/chat/messages/room/${roomId}`;
+        url = `/api/chat/messages/room/${roomId}`;
       } else {
-        url = `http://localhost:5000/api/chat/messages/${otherUserId}`;
+        url = `/api/chat/messages/${otherUserId}`;
       }
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setMessages(data.messages);
-      }
+      const { messages } = await getApi(url);
+      setMessages(messages);
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
@@ -119,16 +94,8 @@ const Chat = () => {
 
   const fetchMessagesSuperAdmin = async (roomId) => {
     try {
-      const token = getToken();
-      const response = await fetch(`http://localhost:5000/api/chat/messages/room/${roomId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setMessages(data.messages);
-      }
+      const { messages } = await getApi(`/api/chat/messages/room/${roomId}`);
+      setMessages(messages);
     } catch (error) {
       console.error('Error fetching messages (superadmin):', error);
     }
@@ -140,30 +107,15 @@ const Chat = () => {
 
     try {
       setSending(true);
-      const token = getToken();
       const otherUser = selectedConversation.participants.find(p => p._id !== user.id);
-      
-      const response = await fetch('http://localhost:5000/api/chat/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          receiverId: otherUser._id,
-          message: newMessage.trim()
-        })
+      const sentMessage = await postApi('/api/chat/send', {
+        receiverId: otherUser._id,
+        message: newMessage.trim()
       });
-
-      if (response.ok) {
-        const sentMessage = await response.json();
-        setMessages(prev => [...prev, sentMessage]);
-        setNewMessage('');
-        // Refresh conversations to update last message
-        fetchConversations();
-      } else {
-        setError('Failed to send message');
-      }
+      setMessages(prev => [...prev, sentMessage]);
+      setNewMessage('');
+      // Refresh conversations to update last message
+      fetchConversations();
     } catch (error) {
       setError('Network error');
     } finally {

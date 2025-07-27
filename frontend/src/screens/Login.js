@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Form, Button, Alert } from "react-bootstrap";
 import { setToken,getToken } from "../utils/auth";
 import useAuth from "../hooks/useAuth";
+import { getApi, postApi } from '../utils/api';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -48,23 +49,13 @@ const Login = () => {
     });
   };
 
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-
   const checkAdminSubscription = async (token) => {
     try {
-      const response = await fetch(`${apiUrl}/api/users/profile`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const data = await getApi('/api/users/profile', {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-      
-      if (response.ok) {
-        const userData = await response.json();
-        return userData.plan && userData.status === 'active';
-      }
-      return false;
+      return data.plan && data.status === 'active';
     } catch (err) {
-      console.error('Error checking subscription:', err);
       return false;
     }
   };
@@ -73,33 +64,19 @@ const Login = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
-
     try {
-      const res = await fetch(`${apiUrl}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-      const data = await res.json();
-      console.log(data,"  << data");
-
-      console.log(res,"  << res");
-      
-      if (res.ok && data.token) {
+      const data = await postApi('/api/auth/login', formData);
+      if (data.token) {
         setToken(data.token);
-        login(data.token); // Update auth state
-        
+        login(data.token);
         const payload = JSON.parse(atob(data.token.split('.')[1]));
-        
         if (payload.role === 'superadmin') {
           navigate('/superadmin');
         } else if (payload.role === 'admin') {
-          // Check if admin has active subscription
           const hasSubscription = await checkAdminSubscription(data.token);
           if (hasSubscription) {
             navigate('/admin');
           } else {
-            // Redirect directly to pricing page if no active subscription
             navigate('/admin/plans');
           }
         } else if (payload.role === 'user') {
@@ -111,7 +88,7 @@ const Login = () => {
         setError(data.message || 'Login failed');
       }
     } catch (err) {
-      setError('Network error. Please check your connection.');
+      setError(err.message || 'Network error. Please check your connection.');
     } finally {
       setLoading(false);
     }

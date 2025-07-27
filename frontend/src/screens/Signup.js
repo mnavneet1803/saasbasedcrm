@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Form, Button, Alert } from "react-bootstrap";
 import { setToken } from "../utils/auth";
+import { postApi } from '../utils/api';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -21,8 +22,6 @@ const Signup = () => {
     });
   };
 
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -41,18 +40,13 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      const res = await fetch(`${apiUrl}/api/auth/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          role: 'admin'
-        }),
+      const data = await postApi('/api/auth/signup', {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: 'admin'
       });
-      const data = await res.json();
-      if (res.ok && data.token) {
+      if (data.token) {
         setToken(data.token);
         if (data.user.role === 'superadmin') {
           navigate('/superadmin');
@@ -65,7 +59,7 @@ const Signup = () => {
         setError(data.message || 'Signup failed');
       }
     } catch (err) {
-      setError('Network error. Please check your connection.');
+      setError(err.message || 'Network error. Please check your connection.');
     } finally {
       setLoading(false);
     }

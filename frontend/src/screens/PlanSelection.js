@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, Button, Row, Col, Alert, Spinner, Badge, Form, Container } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { getApi, postApi } from '../utils/api';
 
 const PlanSelection = () => {
   const [plans, setPlans] = useState([]);
@@ -18,59 +19,12 @@ const PlanSelection = () => {
   const fetchPlansAndGateways = async () => {
     setLoading(true);
     try {
-      console.log('🔍 Fetching plans and gateways...');
-      
-      const token = localStorage.getItem('token');
-      console.log('🔑 Token available:', !!token);
-      console.log('🔑 Token length:', token ? token.length : 0);
-      
-      if (!token) {
-        setError('No authentication token found. Please login again.');
-        setLoading(false);
-        return;
-      }
-      
-      const [plansRes, gatewaysRes] = await Promise.all([
-        fetch("http://localhost:5000/api/plans/active", {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        fetch("http://localhost:5000/api/payments/gateways", {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-      ]);
-      
-      console.log('📋 Plans response:', plansRes.status, plansRes.ok);
-      console.log('💳 Gateways response:', gatewaysRes.status, gatewaysRes.ok);
-      
-      let plansData = [];
-      let gatewaysData = [];
-      
-      if (plansRes.ok) {
-        plansData = await plansRes.json();
-      } else {
-        const plansError = await plansRes.text();
-        console.error('❌ Plans API error:', plansError);
-        setError(`Failed to load plans: ${plansRes.status} - ${plansError}`);
-        return;
-      }
-      
-      if (gatewaysRes.ok) {
-        gatewaysData = await gatewaysRes.json();
-      } else {
-        const gatewaysError = await gatewaysRes.text();
-        console.error('❌ Gateways API error:', gatewaysError);
-        setError(`Failed to load gateways: ${gatewaysRes.status} - ${gatewaysError}`);
-        return;
-      }
-      
-      console.log('📊 Plans data:', plansData);
-      console.log('🔌 Gateways data:', gatewaysData);
-      
-      setPlans(plansData);
-      setGateways(gatewaysData);
-      setSelectedGateway(gatewaysData.length > 0 ? gatewaysData[0].name : "");
+      const plans = await getApi('/api/plans/active');
+      const gateways = await getApi('/api/payments/gateways');
+      setPlans(plans);
+      setGateways(gateways);
+      setSelectedGateway(gateways.length > 0 ? gateways[0].name : "");
     } catch (err) {
-      console.error('❌ Error fetching data:', err);
       setError(`Network error: ${err.message}`);
     } finally {
       setLoading(false);
@@ -82,25 +36,14 @@ const PlanSelection = () => {
       setError("Please select a payment gateway.");
       return;
     }
-    
     setSubscribing(true);
     setError("");
-    
     try {
-      const res = await fetch("http://localhost:5000/api/payments/checkout", {
-        method: "POST",
-        headers: { 
-          'Content-Type': 'application/json', 
-          'Authorization': `Bearer ${localStorage.getItem('token')}` 
-        },
-        body: JSON.stringify({ planId, gateway: selectedGateway })
-      });
-      
-      const data = await res.json();
-      if (res.ok && data.session && data.session.url) {
-        navigate(data.session.url); // mock redirect
+      const { session, message } = await postApi('/api/payments/checkout', { planId, gateway: selectedGateway });
+      if (session && session.url) {
+        navigate(session.url); // mock redirect
       } else {
-        setError(data.message || "Failed to start checkout");
+        setError(message || "Failed to start checkout");
       }
     } catch (err) {
       setError("Network error");

@@ -3,6 +3,7 @@ import {
   Container, Row, Col, Card, Table, Button, Modal, Form, 
   Alert, Spinner, Badge, Dropdown, DropdownButton, Tabs, Tab
 } from "react-bootstrap";
+import { getApi, postApi } from '../utils/api';
 
 const SuperAdminAdminUsers = () => {
   const [admins, setAdmins] = useState([]);
@@ -54,24 +55,13 @@ const SuperAdminAdminUsers = () => {
   const fetchAdmins = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/users?role=admin', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setAdmins(data.users);
-        if (data.users.length > 0) {
-          setSelectedAdmin(data.users[0]);
-        }
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to fetch admins');
+      const { users } = await getApi('/api/users?role=admin');
+      setAdmins(users);
+      if (users.length > 0) {
+        setSelectedAdmin(users[0]);
       }
     } catch (err) {
-      setError('Network error');
+      setError(err.message || 'Failed to fetch admins');
     } finally {
       setLoading(false);
     }
@@ -79,21 +69,10 @@ const SuperAdminAdminUsers = () => {
 
   const fetchUsersForAdmin = async (adminId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/users/by-admin/${adminId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data.users);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to fetch users');
-      }
+      const { users } = await getApi(`/api/users/by-admin/${adminId}`);
+      setUsers(users);
     } catch (err) {
-      setError('Network error');
+      setError(err.message || 'Failed to fetch users');
     }
   };
 
@@ -126,27 +105,20 @@ const SuperAdminAdminUsers = () => {
     if (!validateForm()) return;
     
     try {
-      const response = await fetch('http://localhost:5000/api/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          ...formData,
-          role: 'user',
-          createdBy: selectedAdmin._id
-        })
+      const response = await postApi('/api/users', {
+        ...formData,
+        role: 'user',
+        createdBy: selectedAdmin._id
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      if (response) {
+        const { users } = response;
         setError('');
         setShowCreateModal(false);
         setFormData({ name: '', email: '', phone: '', password: '', status: 'active' });
         fetchUsersForAdmin(selectedAdmin._id);
       } else {
-        const errorData = await response.json();
+        const errorData = response;
         setError(errorData.message || 'Failed to create user');
       }
     } catch (err) {
@@ -160,29 +132,22 @@ const SuperAdminAdminUsers = () => {
     if (!validateForm()) return;
     
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${selectedUser._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          status: formData.status
-        })
+      const response = await postApi(`/api/users/${selectedUser._id}`, {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        status: formData.status
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      if (response) {
+        const { data } = response;
         setError('');
         setShowEditModal(false);
         setFormData({ name: '', email: '', phone: '', password: '', status: 'active' });
         setSelectedUser(null);
         fetchUsersForAdmin(selectedAdmin._id);
       } else {
-        const errorData = await response.json();
+        const errorData = response.data;
         setError(errorData.message || 'Failed to update user');
       }
     } catch (err) {
@@ -192,17 +157,12 @@ const SuperAdminAdminUsers = () => {
 
   const handleToggleStatus = async (userId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${userId}/toggle-status`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await postApi(`/api/users/${userId}/toggle-status`);
 
       if (response.ok) {
         fetchUsersForAdmin(selectedAdmin._id);
       } else {
-        const errorData = await response.json();
+        const errorData = response.data;
         setError(errorData.message || 'Failed to update user status');
       }
     } catch (err) {
@@ -218,20 +178,13 @@ const SuperAdminAdminUsers = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${userId}/reset-password`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ newPassword })
-      });
+      const response = await postApi(`/api/users/${userId}/reset-password`, { newPassword });
 
       if (response.ok) {
         setError('');
         alert('Password reset successfully');
       } else {
-        const errorData = await response.json();
+        const errorData = response.data;
         setError(errorData.message || 'Failed to reset password');
       }
     } catch (err) {
@@ -248,15 +201,8 @@ const SuperAdminAdminUsers = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${selectedUser._id}/transfer`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          targetAdminId: transferData.targetAdminId
-        })
+      const response = await postApi(`/api/users/${selectedUser._id}/transfer`, {
+        targetAdminId: transferData.targetAdminId
       });
 
       if (response.ok) {
@@ -266,7 +212,7 @@ const SuperAdminAdminUsers = () => {
         setSelectedUser(null);
         fetchUsersForAdmin(selectedAdmin._id);
       } else {
-        const errorData = await response.json();
+        const errorData = response.data;
         setError(errorData.message || 'Failed to transfer user');
       }
     } catch (err) {
@@ -289,22 +235,11 @@ const SuperAdminAdminUsers = () => {
   const handleViewActivities = async (user) => {
     setSelectedUser(user);
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${user._id}/activities`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setActivities(data.activities);
-        setShowActivitiesModal(true);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to fetch activities');
-      }
+      const { activities } = await getApi(`/api/users/${user._id}/activities`);
+      setActivities(activities);
+      setShowActivitiesModal(true);
     } catch (err) {
-      setError('Network error');
+      setError(err.message || 'Failed to fetch activities');
     }
   };
 

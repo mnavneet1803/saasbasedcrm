@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card, Button, Spinner, Alert, Container } from "react-bootstrap";
+import { getApi, postApi } from '../utils/api';
 
 const PaymentSuccess = () => {
   const location = useLocation();
@@ -26,22 +27,16 @@ const PaymentSuccess = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("http://localhost:5000/api/payments/success", {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-        body: JSON.stringify({ tx })
-      });
-      const data = await res.json();
-      if (res.ok && data.transaction) {
+      const res = await postApi("/api/payments/success", { tx });
+      const data = res.data;
+      if (res.success && data.transaction) {
         setTransaction(data.transaction);
         
         // Update user profile to reflect new subscription
         try {
-          const profileRes = await fetch("http://localhost:5000/api/users/profile", {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-          });
-          if (profileRes.ok) {
-            const userData = await profileRes.json();
+          const profileRes = await getApi("/api/users/profile");
+          if (profileRes.success) {
+            const userData = profileRes.data;
             // Store updated user data in localStorage to trigger Layout re-render
             localStorage.setItem('userData', JSON.stringify(userData));
             

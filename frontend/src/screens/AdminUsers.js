@@ -3,6 +3,7 @@ import {
   Container, Row, Col, Card, Table, Button, Modal, Form, 
   Alert, Spinner, Badge, Dropdown, DropdownButton
 } from "react-bootstrap";
+import { getApi, postApi } from '../utils/api';
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
@@ -32,21 +33,10 @@ const AdminUsers = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/admin/users', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data.users);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to fetch users');
-      }
+      const { users } = await getApi('/api/admin/users');
+      setUsers(users);
     } catch (err) {
-      setError('Network error');
+      setError(err.message || 'Network error');
     } finally {
       setLoading(false);
     }
@@ -82,57 +72,33 @@ const AdminUsers = () => {
     
     try {
       const url = selectedUser 
-        ? `http://localhost:5000/api/admin/users/${selectedUser._id}`
-        : 'http://localhost:5000/api/admin/users';
+        ? `/api/admin/users/${selectedUser._id}`
+        : '/api/admin/users';
       
       const method = selectedUser ? 'PUT' : 'POST';
       const body = selectedUser 
         ? { name: formData.name, email: formData.email, phone: formData.phone }
         : formData;
       
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(body)
-      });
+      await postApi(url, body, { method });
 
-      if (response.ok) {
-        const data = await response.json();
-        setError('');
-        setShowAddModal(false);
-        setShowEditModal(false);
-        setFormData({ name: '', email: '', phone: '', password: '' });
-        setSelectedUser(null);
-        fetchUsers();
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to save user');
-      }
+      setError('');
+      setShowAddModal(false);
+      setShowEditModal(false);
+      setFormData({ name: '', email: '', phone: '', password: '' });
+      setSelectedUser(null);
+      fetchUsers();
     } catch (err) {
-      setError('Network error');
+      setError(err.message || 'Failed to save user');
     }
   };
 
   const handleToggleStatus = async (userId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/users/${userId}/toggle-status`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        fetchUsers();
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to update user status');
-      }
+      await postApi(`/api/admin/users/${userId}/toggle-status`, {}, { method: 'PATCH' });
+      fetchUsers();
     } catch (err) {
-      setError('Network error');
+      setError(err.message || 'Failed to update user status');
     }
   };
 
@@ -144,24 +110,11 @@ const AdminUsers = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/users/${userId}/reset-password`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ newPassword })
-      });
-
-      if (response.ok) {
-        setError('');
-        alert('Password reset successfully');
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to reset password');
-      }
+      await postApi(`/api/admin/users/${userId}/reset-password`, { newPassword }, { method: 'PATCH' });
+      setError('');
+      alert('Password reset successfully');
     } catch (err) {
-      setError('Network error');
+      setError(err.message || 'Failed to reset password');
     }
   };
 
@@ -179,22 +132,11 @@ const AdminUsers = () => {
   const handleViewActivities = async (user) => {
     setSelectedUser(user);
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/users/${user._id}/activities`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setActivities(data.activities);
-        setShowActivitiesModal(true);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to fetch activities');
-      }
+      const { activities } = await getApi(`/api/admin/users/${user._id}/activities`);
+      setActivities(activities);
+      setShowActivitiesModal(true);
     } catch (err) {
-      setError('Network error');
+      setError(err.message || 'Failed to fetch activities');
     }
   };
 

@@ -3,6 +3,7 @@ import {
   Container, Row, Col, Card, Table, Button, Modal, Form, 
   Alert, Spinner, Badge, Dropdown, DropdownButton
 } from "react-bootstrap";
+import { getApi, postApi } from '../utils/api';
 
 const SuperAdminUsers = () => {
   const [users, setUsers] = useState([]);
@@ -39,21 +40,10 @@ const SuperAdminUsers = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/users?role=user', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data.users);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to fetch users');
-      }
+      const { users } = await getApi('/api/users?role=user');
+      setUsers(users);
     } catch (err) {
-      setError('Network error');
+      setError(err.message || 'Failed to fetch users');
     } finally {
       setLoading(false);
     }
@@ -61,16 +51,8 @@ const SuperAdminUsers = () => {
 
   const fetchAdmins = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/users?role=admin', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setAdmins(data.users);
-      }
+      const { users } = await getApi('/api/users?role=admin');
+      setAdmins(users);
     } catch (err) {
       console.error('Failed to fetch admins:', err);
     }
@@ -99,7 +81,7 @@ const SuperAdminUsers = () => {
     if (!validateForm()) return;
     
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${selectedUser._id}`, {
+      const response = await postApi(`/api/users/${selectedUser._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -131,7 +113,7 @@ const SuperAdminUsers = () => {
 
   const handleToggleStatus = async (userId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${userId}/toggle-status`, {
+      const response = await postApi(`/api/users/${userId}/toggle-status`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -157,7 +139,7 @@ const SuperAdminUsers = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${userId}/reset-password`, {
+      const response = await postApi(`/api/users/${userId}/reset-password`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -192,22 +174,11 @@ const SuperAdminUsers = () => {
   const handleViewActivities = async (user) => {
     setSelectedUser(user);
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${user._id}/activities`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setActivities(data.activities);
-        setShowActivitiesModal(true);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to fetch activities');
-      }
+      const { activities } = await getApi(`/api/users/${user._id}/activities`);
+      setActivities(activities);
+      setShowActivitiesModal(true);
     } catch (err) {
-      setError('Network error');
+      setError(err.message || 'Failed to fetch activities');
     }
   };
 

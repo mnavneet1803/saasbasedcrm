@@ -3,6 +3,7 @@ import {
   Row, Col, Card, Button, Table, Modal, Form, Alert,
   Badge, Spinner, InputGroup
 } from "react-bootstrap";
+import { getApi, postApi } from '../utils/api';
 
 const FEATURE_OPTIONS = [
   "User Management",
@@ -47,18 +48,14 @@ const ManagePlans = () => {
     setError("");
     try {
       const query = new URLSearchParams(params).toString();
-      const response = await fetch(`http://localhost:5000/api/plans${query ? `?${query}` : ""}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
+      const response = await getApi(`/api/plans${query ? `?${query}` : ""}`);
+      if (response) {
+        const data = await response;
         setPlans(data);
       } else {
         setError('Failed to fetch plans');
       }
-    } catch (error) {
+    } catch (error) {      
       setError('Network error');
     } finally {
       setLoading(false);
@@ -86,17 +83,10 @@ const ManagePlans = () => {
     setSuccess("");
     try {
       const url = editingPlan
-        ? `http://localhost:5000/api/plans/${editingPlan._id}`
-        : 'http://localhost:5000/api/plans';
+        ? `/api/plans/${editingPlan._id}`
+        : '/api/plans';
       const method = editingPlan ? 'PUT' : 'POST';
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      });
+      const response = await postApi(url, formData);
       if (response.ok) {
         setSuccess(editingPlan ? 'Plan updated successfully' : 'Plan created successfully');
         setShowModal(false);
@@ -115,12 +105,7 @@ const ManagePlans = () => {
   const handleDelete = async (planId) => {
     if (window.confirm('Are you sure you want to delete this plan? This will affect all admins using this plan.')) {
       try {
-        const response = await fetch(`http://localhost:5000/api/plans/${planId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
+        const response = await getApi(`/api/plans/${planId}`, 'DELETE');
         if (response.ok) {
           setSuccess('Plan deleted successfully');
           fetchPlans(filters);
