@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link ,useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Form, Button, Alert } from "react-bootstrap";
 import { setToken,getToken } from "../utils/auth";
 import useAuth from "../hooks/useAuth";
@@ -146,7 +146,7 @@ const Login = () => {
                 <div className="text-center">
                   <p className="mb-0">
                     Don't have an account?{' '}
-                    <a href="/signup" className="text-decoration-none">Sign Up</a>
+                    <Link to="/signup" className="text-decoration-none">Sign Up</Link>
                   </p>
                 </div>
               </Card.Body>
