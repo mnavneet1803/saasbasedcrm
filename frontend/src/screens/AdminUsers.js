@@ -33,8 +33,12 @@ const AdminUsers = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const { users } = await getApi('/api/admin/users');
-      setUsers(users);
+     const data = await getApi('/api/admin/users');
+      if (!data.message) {
+        setUsers(users);
+      }else{
+        setError(data.message)
+      }
     } catch (err) {
       setError(err.message || 'Network error');
     } finally {
@@ -176,7 +180,7 @@ const AdminUsers = () => {
           <h2 className="fw-bold mb-1">User Management</h2>
           <p className="text-muted mb-0">Manage your team members and their access</p>
         </div>
-        <Button variant="primary" onClick={() => setShowAddModal(true)}>
+        <Button disabled={error.length} variant="primary" onClick={() => setShowAddModal(true)}>
           <i className="fas fa-plus me-2"></i>
           Add New User
         </Button>
@@ -193,7 +197,7 @@ const AdminUsers = () => {
         <Card.Header className="bg-white">
           <div className="d-flex justify-content-between align-items-center">
             <h5 className="mb-0">My Users ({users.length})</h5>
-            <Button variant="outline-primary" size="sm" onClick={fetchUsers}>
+            <Button disabled={error.length} variant="outline-primary" size="sm" onClick={fetchUsers}>
               <i className="fas fa-sync-alt me-2"></i>
               Refresh
             </Button>
@@ -285,7 +289,7 @@ const AdminUsers = () => {
               <i className="fas fa-users text-muted" style={{ fontSize: '3rem' }}></i>
               <h5 className="mt-3 text-muted">No users found</h5>
               <p className="text-muted">Start by adding your first team member.</p>
-              <Button variant="primary" onClick={() => setShowAddModal(true)}>
+              <Button disabled={error.length} variant="primary" onClick={() => setShowAddModal(true)}>
                 Add First User
               </Button>
             </div>
