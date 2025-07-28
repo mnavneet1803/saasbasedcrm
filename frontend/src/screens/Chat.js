@@ -59,7 +59,9 @@ const Chat = () => {
     try {
       setLoading(true);
       const conversations = await getApi('/api/chat/conversations');
-      setConversations(conversations);
+       if (conversations.length) {
+        setConversations(conversations);
+      }
     } catch (error) {
       setError('Network error');
     } finally {
