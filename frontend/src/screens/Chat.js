@@ -59,8 +59,10 @@ const Chat = () => {
     try {
       setLoading(true);
       const conversations = await getApi('/api/chat/conversations');
-       if (conversations.length) {
+       if (!conversations.message) {
         setConversations(conversations);
+      }else{
+        setError(conversations.message)
       }
     } catch (error) {
       setError('Network error');
@@ -373,7 +375,7 @@ const Chat = () => {
       </Row>
 
       {error && (
-        <Alert variant="danger" className="position-fixed top-0 end-0 m-3" style={{ zIndex: 1050 }}>
+        <Alert variant="danger" className="position-fixed top-0 start-50 translate-middle-x mt-3" style={{ zIndex: 1050 }}>
           {error}
         </Alert>
       )}
