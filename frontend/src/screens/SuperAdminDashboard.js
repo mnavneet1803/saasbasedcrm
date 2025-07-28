@@ -63,6 +63,7 @@ const SuperAdminDashboard = () => {
             <h4 className="mb-1 fw-bold">{value}</h4>
             <p className="text-muted mb-0">{title}</p>
             {subtitle && <small className="text-muted">{subtitle}</small>}
+             <br/>
             {trend && (
               <small className={`text-${trend > 0 ? 'success' : 'danger'}`}>
                 {trend > 0 ? '↗' : '↘'} {Math.abs(trend)}% from last month
