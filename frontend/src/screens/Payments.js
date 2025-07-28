@@ -164,7 +164,7 @@ const Payments = () => {
         <Col md={3} className="mb-3">
           <StatCard
             title="Total Revenue"
-            value={loading ? "Loading..." : `₹${(stats.totalAmount || 0).toLocaleString()}`}
+            value={loading ? "Loading..." : `₹${(stats.totalRevenue || 0).toLocaleString()}`}
             icon="💰"
             color="success"
             subtitle="All time"
