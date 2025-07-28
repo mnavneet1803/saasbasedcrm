@@ -336,7 +336,7 @@ const Chat = () => {
                 </div>
 
                 {/* Message Input */}
-                <div className="message-input p-3 border-top">
+              {user.role != 'superadmin' &&   <div className="message-input p-3 border-top">
                   <Form onSubmit={handleSendMessage}>
                     <div className="d-flex">
                       <Form.Control
@@ -356,7 +356,7 @@ const Chat = () => {
                       </Button>
                     </div>
                   </Form>
-                </div>
+                </div>}
               </Card.Body>
             </Card>
           ) : (
