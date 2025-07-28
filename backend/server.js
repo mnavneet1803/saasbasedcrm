@@ -33,6 +33,11 @@ app.use('/api/payment-gateways', require('./routes/paymentGateway'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/chat', require('./routes/chat'));
 
+// Health check route
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ success: true, message: 'Server is running 🚀' });
+});
+
 app.get('/', (req, res) => {
   res.send('SaaS CRM API is running');
 });
